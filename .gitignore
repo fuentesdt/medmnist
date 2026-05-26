@@ -1,0 +1,19 @@
+# MedMNIST data (large binary files — copy to GPU machine manually)
+data/medmnist3d/
+
+# MATLAB model checkpoints (stay on the training machine)
+*.mat
+checkpoints/
+
+# MATLAB scratch / autosave files
+*.asv
+*.autosave
+slprj/
+resources/
+
+# Local Claude notes (not for sharing)
+CLAUDE.local.md
+
+# OS noise
+.DS_Store
+Thumbs.db
