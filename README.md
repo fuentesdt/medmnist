@@ -15,11 +15,12 @@ conventions, the results contract — read [`CLAUDE.md`](CLAUDE.md).
 | Where | What |
 |---|---|
 | Dev machine | Git, Bash |
-| GPU machine | MATLAB R2023b+, CUDA, Python + NumPy (for `.npz` loading) |
+| GPU machine | MATLAB R2023b+, CUDA, Python + NumPy + PyYAML (for data loading and sweep generation) |
 
 MATLAB's Python bridge (`pyenv`) must point to an environment that has NumPy
-installed. Verify with `pyenv` in MATLAB; configure with
-`pyenv('Version', '/path/to/python')`.
+and PyYAML installed. Verify with `pyenv` in MATLAB; configure with
+`pyenv('Version', '/path/to/python')`. Install packages with
+`pip install numpy pyyaml`.
 
 ---
 
@@ -67,7 +68,11 @@ git pull && ./tools/run_sweep.sh 001_nodule_smoke
 
 # ── Dev machine ──────────────────────────────────────────────────────────
 git pull
+# Analyze one sweep in detail.
 matlab -batch "tools.analyze_sweep('results/nodulemnist3d/001_nodule_smoke')"
+
+# Cross-dataset scorecard: best result vs. published targets for all datasets.
+matlab -batch "tools.summarize_benchmarks()"
 ```
 
 `run_sweep.sh` handles the full GPU-side loop: if no `run_NNN.m` files exist
@@ -102,7 +107,7 @@ then refuses to train on a dirty working tree.
 train.m                    # single entry point: train(configPath)
 configs/                   # base configs (one per dataset) + sweeps/
 src/                       # data, model, train, eval, utils
-+tools/                    # MATLAB tools: generate_sweep, aggregate_results, analyze_sweep
++tools/                    # MATLAB tools: generate_sweep, aggregate_results, analyze_sweep, summarize_benchmarks
 tools/                     # Bash scripts: run_sweep.sh, commit_results.sh, download_medmnist3d.sh
 results/<dataset>/<sweep>/ # run_NNN.json + summary.csv (committed)
 data/medmnist3d/           # .npz files (gitignored — stays on each machine)
