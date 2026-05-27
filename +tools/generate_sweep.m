@@ -23,7 +23,7 @@ function generate_sweep(sweepDir)
     validateDef(def);
 
     % ---- Grid expansion -------------------------------------------------
-    gridFields = fieldnames(def.grid);
+    gridFields = fieldnames(def.grid)';   % row cell to match cell(1, N)
     valueCells  = cell(1, numel(gridFields));
     for k = 1:numel(gridFields)
         valueCells{k} = toCell(def.grid.(gridFields{k}));
@@ -78,22 +78,33 @@ end
 function def = loadYaml(yamlPath)
     def = [];
 
+    % Python bridge: yaml → json → jsondecode (reuses the bridge already
+    % required for data loading; PyYAML ships with most scientific Python envs).
+    if isempty(def)
+        try
+            py_yaml = py.importlib.import_module('yaml');
+            py_json = py.importlib.import_module('json');
+            raw     = fileread(yamlPath);
+            def     = jsondecode(char(py_json.dumps(py_yaml.safe_load(raw))));
+        catch
+        end
+    end
+
     % Built-in (MATLAB R2024a+)
-    if ~isempty(which('yamlread'))
+    if isempty(def) && ~isempty(which('yamlread'))
         try, def = yamlread(yamlPath); catch, end
     end
 
-    % yaml-matlab package fallback: yaml.load takes a string
+    % yaml-matlab package fallback
     if isempty(def)
         try, def = yaml.load(fileread(yamlPath)); catch, end
     end
 
     if isempty(def)
         error('generate_sweep:noYamlParser', [ ...
-            'No YAML parser found.\n'                                          ...
-            '  Option 1: upgrade to MATLAB R2024a+ (yamlread built-in).\n'    ...
-            '  Option 2: install yaml-matlab from MATLAB File Exchange\n'     ...
-            '            (search "YAML" or see https://github.com/ewiger/yamlmatlab).']);
+            'No YAML parser found.  Tried: Python PyYAML, MATLAB yamlread, yaml-matlab.\n' ...
+            '  Fix: ensure the Python env configured in pyenv has PyYAML installed\n'       ...
+            '       (pip install pyyaml), or upgrade to MATLAB R2024a+.']);
     end
 end
 
