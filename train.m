@@ -74,7 +74,7 @@ function train(configPath)
     scores = zeros(N_test, cfg.numClasses, 'single');
     for bStart = 1 : cfg.batchSize : N_test
         bEnd  = min(bStart + cfg.batchSize - 1, N_test);
-        Xb    = dlarray(single(data.XTest(:,:,:,:, bStart:bEnd)), 'SSSSCB');
+        Xb    = dlarray(single(data.XTest(:,:,:,:, bStart:bEnd)), 'SSSCB');
         out   = predict(net, Xb);
         batch = single(extractdata(out));
         if size(batch, 1) == cfg.numClasses && cfg.numClasses ~= N_test
