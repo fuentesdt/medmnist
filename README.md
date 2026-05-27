@@ -24,28 +24,37 @@ and PyYAML installed. Verify with `pyenv` in MATLAB; configure with
 
 ---
 
-## First run (nodulemnist3d smoke test)
+## Running all six datasets
 
 ```bash
 # ── Dev machine ──────────────────────────────────────────────────────────
-# 1. Download the 28³ datasets (~104 MB total).
+# 1. Download all six 28³ datasets (~104 MB total).
 ./tools/download_medmnist3d.sh
 
 # 2. Copy data/ to the GPU machine out-of-band (USB, scp, shared storage).
 #    Git does not carry data — data/medmnist3d/ is gitignored.
 
-# 3. Commit the scaffold and push so the GPU machine can pull.
-git add -A && git commit -m "initial scaffold" && git push
+# 3. Push so the GPU machine can pull.
+git push
 
 # ── GPU machine ──────────────────────────────────────────────────────────
 git pull
 
-# 4. Verify the data files and print split statistics + chance floors.
+# 4. Verify data files and print split statistics + chance floors.
 matlab -batch "addpath('tools'); summarize_medmnist3d('data/medmnist3d')"
 
-# 5. Single training run (sanity check before launching a full sweep).
-matlab -batch "train('configs/nodulemnist3d.m')"
+# 5. Train all six datasets (one adhoc run per dataset, 50 epochs each).
+for ds in nodulemnist3d organmnist3d adrenalmnist3d vesselmnist3d fracturemnist3d synapsemnist3d; do
+    matlab -batch "train('configs/${ds}.m')"
+done
+
+# 6. Check results against published targets.
+matlab -batch "tools.summarize_benchmarks()"
 ```
+
+The six base configs use identical hyperparameters (lr=1e-3, batch=32, 50 epochs).
+Once all run, `summarize_benchmarks` shows which datasets are reproduced and which
+need tuning. Use the sweep workflow below to tune any that fall short.
 
 ---
 
