@@ -66,10 +66,12 @@ function train(configPath)
     save(modelPath, 'net');
 
     % 11. Evaluate on test split ------------------------------------------
+    % Pass XTest directly as a numeric array — minibatchpredict treats the
+    % last dimension as the batch dimension ([H W D C N] → N observations).
+    % arrayDatastore with IterationDimension iterates a spatial dim (28), not N.
     fprintf('[%s] Evaluating on test split ...\n', runId);
-    testImgDs = arrayDatastore(data.XTest, 'IterationDimension', ndims(data.XTest));
-    scores    = minibatchpredict(net, testImgDs, 'MiniBatchSize', cfg.batchSize);
-    metrics   = computeMetrics(cfg, scores, YTest);
+    scores  = minibatchpredict(net, data.XTest, 'MiniBatchSize', cfg.batchSize);
+    metrics = computeMetrics(cfg, scores, YTest);
 
     % 12. Write result JSON -----------------------------------------------
     writeRunResult(cfg, sweepId, runId, resultPath, info, metrics, trainSec);

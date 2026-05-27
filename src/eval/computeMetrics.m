@@ -15,8 +15,6 @@ function metrics = computeMetrics(cfg, scores, YTest)
     % Normalize to [N, numClasses] — minibatchpredict output orientation varies
     % across MATLAB versions and network types.
     N = size(YTest, 1);
-    fprintf('DBG computeMetrics: scores %dx%d  YTest %dx%d  N=%d  numClasses=%d\n', ...
-            size(scores,1), size(scores,2), size(YTest,1), size(YTest,2), N, cfg.numClasses);
     if size(scores, 1) ~= N
         scores = scores';
     end
@@ -26,9 +24,6 @@ function metrics = computeMetrics(cfg, scores, YTest)
     predIdx = predIdx(:);               % ensure column vector
     trueIdx = double(YTest);
     trueIdx = trueIdx(:);               % ensure column vector
-
-    fprintf('DBG computeMetrics: predIdx %dx%d  trueIdx %dx%d\n', ...
-            size(predIdx,1), size(predIdx,2), size(trueIdx,1), size(trueIdx,2));
 
     % Overall accuracy
     metrics.test_acc = mean(predIdx == trueIdx);
