@@ -151,15 +151,18 @@ constraints:
   max_train_minutes: 30
 ```
 
-`tools/generate_sweep.m` expands the grid into individual `run_NNN.m` config files.
+`+tools/generate_sweep.m` expands the grid into individual `run_NNN.m` config files.
+YAML grid keys may be snake_case (`batch_size`) — the generator converts to camelCase (`batchSize`) automatically.
 
 ## Coding conventions
 
 - MATLAB R2023b or later (`trainnet`, not `trainNetwork`).
 - One function per file in `src/`. File name matches function name.
+- MATLAB tool functions (generate_sweep, aggregate_results, analyze_sweep) live in `+tools/` so they are callable as `tools.X(...)`. Bash scripts stay in `tools/`.
+- YAML parsing: `yamlread` (built-in, R2024a+) is tried first; falls back to the `yaml-matlab` package from MATLAB File Exchange (search "YAML" or see https://github.com/ewiger/yamlmatlab). If neither is available, `tools.generate_sweep` errors with install instructions.
 - Configs are MATLAB structs returned from a function (`cfg = nodulemnist3d()`). Validation in code via `validateConfig(cfg)`; fail fast with clear messages.
 - All randomness goes through `rng(cfg.seed)` at the top of `train.m`. Seed is logged.
-- Every run writes to `results/<dataset>/<sweep_id>/run_NNN.json`. Never overwrite.
+- Every run writes to `results/<dataset>/<run_id>.json` (run_id already encodes the sweep prefix). Never overwrite.
 - Use `arguments` blocks for function signatures.
 - `npy-matlab` is *not* a dependency — we use the Python bridge (`py.numpy.load`) for `.npz` files. Requires a configured `pyenv` with NumPy installed.
 

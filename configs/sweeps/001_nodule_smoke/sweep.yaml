@@ -1,0 +1,15 @@
+sweep_id: 001_nodule_smoke
+dataset: nodulemnist3d
+base_config: configs/nodulemnist3d.m
+description: |
+  Smoke test: 2 LRs x 2 seeds = 4 runs.
+  Verifies end-to-end pipeline before committing to larger sweeps.
+  Not intended to find optimal hyperparameters.
+
+grid:
+  lr: [1.0e-4, 3.0e-4]
+  seed: [42, 1337]
+
+constraints:
+  max_runs: 10
+  max_train_minutes: 30
