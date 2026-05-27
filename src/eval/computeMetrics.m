@@ -3,17 +3,27 @@ function metrics = computeMetrics(cfg, scores, YTest)
 %
 %   metrics = computeMetrics(cfg, scores, YTest)
 %
-%   scores: [N numClasses] softmax probabilities from minibatchpredict.
+%   scores: [N numClasses] or [numClasses N] numeric from minibatchpredict.
 %   YTest:  [N 1] categorical (from encodeLabels; double() gives 1-indexed class).
 
     arguments
         cfg    (1,1) struct
-        scores (:,:) single
+        scores (:,:) {mustBeNumeric}
         YTest  (:,1) categorical
     end
 
-    [~, predIdx] = max(scores, [], 2);   % 1-indexed predicted class
-    trueIdx      = double(YTest);         % 1-indexed true class
+    % Normalize to [N, numClasses] — minibatchpredict output orientation varies
+    % across MATLAB versions and network types.
+    N = size(YTest, 1);
+    if size(scores, 1) ~= N
+        scores = scores';
+    end
+    scores = single(scores);
+
+    [~, predIdx] = max(scores, [], 2);
+    predIdx = predIdx(:);               % ensure column vector
+    trueIdx = double(YTest);
+    trueIdx = trueIdx(:);               % ensure column vector
 
     % Overall accuracy
     metrics.test_acc = mean(predIdx == trueIdx);
