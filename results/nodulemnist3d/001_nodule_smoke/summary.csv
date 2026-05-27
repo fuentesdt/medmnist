@@ -1,5 +1,5 @@
 run_id,sweep_id,status,git_sha,config_hash,timestamp_utc,test_acc,test_auc,best_val_acc,best_val_epoch,chance_floor,train_time_sec,dataset,lr,batchSize,epochs,optimizer,augmentation,seed,architecture,gpu,host
-001_nodule_smoke/run_003,001_nodule_smoke,complete,abc1234,h6g7f2a9,2026-05-26T15:05:38Z,0.756,0.812,0.771,44,0.624,395,nodulemnist3d,0.0003,32,50,adam,flip,42,baseline_3d_v1,NVIDIA A100,gpuhost1
-001_nodule_smoke/run_004,001_nodule_smoke,complete,abc1234,i5h6g3b8,2026-05-26T15:23:19Z,0.741,0.795,0.758,42,0.624,403,nodulemnist3d,0.0003,32,50,adam,flip,1337,baseline_3d_v1,NVIDIA A100,gpuhost1
-001_nodule_smoke/run_002,001_nodule_smoke,complete,abc1234,g7f8e1b0,2026-05-26T14:48:03Z,0.728,0.779,0.745,41,0.624,401,nodulemnist3d,0.0001,32,50,adam,flip,1337,baseline_3d_v1,NVIDIA A100,gpuhost1
-001_nodule_smoke/run_001,001_nodule_smoke,complete,abc1234,f8e9d2c1,2026-05-26T14:30:22Z,0.712,0.764,0.731,38,0.624,398,nodulemnist3d,0.0001,32,50,adam,flip,42,baseline_3d_v1,NVIDIA A100,gpuhost1
+001_nodule_smoke/run_001,001_nodule_smoke,complete,a2780a2,7211fc7c,2026-05-27T17:58:51Z,0.851612903225806,0.867632150650024,NaN,NaN,0.793548387096774,32,nodulemnist3d,0.0001,32,50,adam,flip,42,baseline_3d_v1,NVIDIA RTX A4000,kirby
+001_nodule_smoke/run_003,001_nodule_smoke,complete,a2780a2,68b3f681,2026-05-27T18:00:14Z,0.845161290322581,0.870109289884567,NaN,NaN,0.793548387096774,29,nodulemnist3d,0.0003,32,50,adam,flip,42,baseline_3d_v1,NVIDIA RTX A4000,kirby
+001_nodule_smoke/run_004,001_nodule_smoke,complete,a2780a2,6eb17ab8,2026-05-27T18:00:56Z,0.845161290322581,0.877350151538849,NaN,NaN,0.793548387096774,29,nodulemnist3d,0.0003,32,50,adam,flip,1337,baseline_3d_v1,NVIDIA RTX A4000,kirby
+001_nodule_smoke/run_002,001_nodule_smoke,complete,a2780a2,5af2aa0b,2026-05-27T17:59:33Z,0.841935483870968,0.860962927341461,NaN,NaN,0.793548387096774,29,nodulemnist3d,0.0001,32,50,adam,flip,1337,baseline_3d_v1,NVIDIA RTX A4000,kirby
