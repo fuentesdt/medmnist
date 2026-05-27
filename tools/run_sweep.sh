@@ -8,14 +8,15 @@
 #   ./tools/run_sweep.sh <sweep_id>
 #
 # Behaviour:
+#   - If no run_NNN.m configs exist yet, generates them from sweep.yaml,
+#     commits, and pushes so results are tied to a clean, traceable SHA.
 #   - Refuses to start if the git working tree has uncommitted tracked changes.
-#     (Every result JSON records the current SHA; a dirty tree breaks traceability.)
 #   - Skips any run whose result JSON already exists (idempotent re-runs).
 #   - Continues past individual run failures; reports a summary at the end.
 #   - Calls tools.aggregate_results at the end to build summary.csv.
 #   - Exits non-zero if any run failed.
 #
-# Requires: matlab in PATH.
+# Requires: matlab in PATH, git remote accessible for push.
 
 set -euo pipefail
 
@@ -44,7 +45,29 @@ if ! git diff --quiet HEAD; then
     exit 1
 fi
 
-# --- Locate dataset ----------------------------------------------------------
+# --- Generate run configs if needed ------------------------------------------
+# If sweep.yaml is present but per-run configs haven't been expanded yet,
+# generate them here, commit, and push before training starts.
+
+mapfile -t RUN_PATHS < <(find "$SWEEP_DIR" -name 'run_[0-9][0-9][0-9].m' | sort)
+
+if [[ ${#RUN_PATHS[@]} -eq 0 ]]; then
+    echo "No run configs found — generating from $YAML_PATH ..."
+    if ! matlab -batch "tools.generate_sweep('$SWEEP_DIR')"; then
+        echo "Error: tools.generate_sweep failed." >&2
+        exit 1
+    fi
+    git add "$SWEEP_DIR/"
+    git commit -m "expand: $SWEEP_ID"
+    git push
+    mapfile -t RUN_PATHS < <(find "$SWEEP_DIR" -name 'run_[0-9][0-9][0-9].m' | sort)
+    if [[ ${#RUN_PATHS[@]} -eq 0 ]]; then
+        echo "Error: generate_sweep produced no run configs in $SWEEP_DIR." >&2
+        exit 1
+    fi
+fi
+
+# --- Locate dataset and compute provenance -----------------------------------
 
 DATASET=$(grep '^dataset:' "$YAML_PATH" | sed 's/^dataset:[[:space:]]*//' | tr -d '[:space:]')
 if [[ -z "$DATASET" ]]; then
@@ -54,17 +77,6 @@ fi
 
 readonly RESULT_DIR="results/$DATASET/$SWEEP_ID"
 GIT_SHA=$(git rev-parse --short HEAD)
-readonly GIT_SHA
-
-# --- Find run configs --------------------------------------------------------
-
-mapfile -t RUN_PATHS < <(find "$SWEEP_DIR" -name 'run_[0-9][0-9][0-9].m' | sort)
-
-if [[ ${#RUN_PATHS[@]} -eq 0 ]]; then
-    echo "Error: no run_NNN.m files in $SWEEP_DIR." >&2
-    echo "       Run tools.generate_sweep first (on the dev machine), then git push." >&2
-    exit 1
-fi
 
 printf 'Sweep:   %s\n' "$SWEEP_ID"
 printf 'Dataset: %s\n' "$DATASET"

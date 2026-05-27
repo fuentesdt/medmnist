@@ -54,23 +54,25 @@ Once the single run passes, use the sweep loop to find good hyperparameters.
 
 ```bash
 # ── Dev machine ──────────────────────────────────────────────────────────
-# Edit configs/sweeps/NNN_name/sweep.yaml, then generate per-run configs.
-matlab -batch "tools.generate_sweep('configs/sweeps/001_nodule_smoke')"
-git add configs/sweeps/001_nodule_smoke/ && git commit -m "sweep: 001_nodule_smoke" && git push
+# Write a sweep definition (YAML only — no MATLAB needed on the dev machine).
+git add configs/sweeps/001_nodule_smoke/sweep.yaml
+git commit -m "sweep: 001_nodule_smoke" && git push
 
 # ── GPU machine ──────────────────────────────────────────────────────────
-git pull
-./tools/run_sweep.sh 001_nodule_smoke       # trains all runs, writes JSON results
-./tools/commit_results.sh 001_nodule_smoke  # stages + commits results, does NOT push
-git push
+# One command: pull, generate per-run configs, train every run, aggregate.
+git pull && ./tools/run_sweep.sh 001_nodule_smoke
+
+# When all runs are done, commit and push results.
+./tools/commit_results.sh 001_nodule_smoke && git push
 
 # ── Dev machine ──────────────────────────────────────────────────────────
 git pull
-# Analyze results and plan the next sweep.
 matlab -batch "tools.analyze_sweep('results/nodulemnist3d/001_nodule_smoke')"
 ```
 
-`run_sweep.sh` is idempotent — re-running skips completed runs. If a run
+`run_sweep.sh` handles the full GPU-side loop: if no `run_NNN.m` files exist
+yet it generates them from `sweep.yaml`, commits, and pushes before training
+starts. Re-running is idempotent — completed runs are skipped. If a run
 crashes, re-run the same command to retry only the failed runs.
 
 ---
@@ -89,7 +91,8 @@ MATLAB + CUDA but has no Claude Code. There is no direct SSH between them.
 
 The inviolable rule: **configs are committed before runs**. Every result
 JSON records the git SHA of the code that produced it. `run_sweep.sh`
-refuses to run on a dirty working tree.
+generates and commits per-run configs automatically if they don't exist,
+then refuses to train on a dirty working tree.
 
 ---
 
