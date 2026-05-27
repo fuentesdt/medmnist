@@ -66,11 +66,22 @@ function train(configPath)
     save(modelPath, 'net');
 
     % 11. Evaluate on test split ------------------------------------------
-    % Pass XTest directly as a numeric array — minibatchpredict treats the
-    % last dimension as the batch dimension ([H W D C N] → N observations).
-    % arrayDatastore with IterationDimension iterates a spatial dim (28), not N.
+    % Explicit dlarray batching: minibatchpredict in R2025b misinterprets the
+    % batch dimension for raw 5D arrays, iterating over H=28 instead of N.
+    % 'SSSSCB' labels give MATLAB unambiguous dimension semantics.
     fprintf('[%s] Evaluating on test split ...\n', runId);
-    scores  = minibatchpredict(net, data.XTest, 'MiniBatchSize', cfg.batchSize);
+    N_test = size(data.XTest, ndims(data.XTest));
+    scores = zeros(N_test, cfg.numClasses, 'single');
+    for bStart = 1 : cfg.batchSize : N_test
+        bEnd  = min(bStart + cfg.batchSize - 1, N_test);
+        Xb    = dlarray(single(data.XTest(:,:,:,:, bStart:bEnd)), 'SSSSCB');
+        out   = predict(net, Xb);
+        batch = single(extractdata(out));
+        if size(batch, 1) == cfg.numClasses && cfg.numClasses ~= N_test
+            batch = batch';           % [numClasses, B] → [B, numClasses]
+        end
+        scores(bStart:bEnd, :) = batch;
+    end
     metrics = computeMetrics(cfg, scores, YTest);
 
     % 12. Write result JSON -----------------------------------------------
