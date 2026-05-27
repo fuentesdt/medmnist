@@ -60,28 +60,47 @@ need tuning. Use the sweep workflow below to tune any that fall short.
 
 ## Sweep workflow
 
-Once the single run passes, use the sweep loop to find good hyperparameters.
+Use sweeps to tune hyperparameters once the base runs are done.
+One `sweep.yaml` per dataset; the GPU expands, trains, and aggregates.
 
 ```bash
 # ── Dev machine ──────────────────────────────────────────────────────────
-# Write a sweep definition (YAML only — no MATLAB needed on the dev machine).
-git add configs/sweeps/001_nodule_smoke/sweep.yaml
-git commit -m "sweep: 001_nodule_smoke" && git push
+# Write one sweep.yaml per dataset (no MATLAB needed).
+# Convention: configs/sweeps/NNN_<dataset>_<tag>/sweep.yaml
+git add configs/sweeps/ && git commit -m "sweeps: round 1" && git push
 
 # ── GPU machine ──────────────────────────────────────────────────────────
-# One command: pull, generate per-run configs, train every run, aggregate.
-git pull && ./tools/run_sweep.sh 001_nodule_smoke
+git pull
 
-# When all runs are done, commit and push results.
-./tools/commit_results.sh 001_nodule_smoke && git push
+# Define the sweeps to run (edit to match your sweep directory names).
+SWEEPS=(
+    001_nodule_smoke
+    002_organ_lr
+    003_adrenal_lr
+    004_vessel_lr
+    005_fracture_lr
+    006_synapse_lr
+)
+
+# Each command: generates configs if needed, trains all runs, aggregates.
+for sweep in "${SWEEPS[@]}"; do
+    ./tools/run_sweep.sh "$sweep"
+done
+
+# Commit all results, then push once.
+for sweep in "${SWEEPS[@]}"; do
+    ./tools/commit_results.sh "$sweep"
+done
+git push
 
 # ── Dev machine ──────────────────────────────────────────────────────────
 git pull
-# Analyze one sweep in detail.
-matlab -batch "tools.analyze_sweep('results/nodulemnist3d/001_nodule_smoke')"
 
-# Cross-dataset scorecard: best result vs. published targets for all datasets.
+# Cross-dataset scorecard: best result vs. published targets.
 matlab -batch "tools.summarize_benchmarks()"
+
+# Drill into a specific sweep.
+matlab -batch "tools.analyze_sweep('results/nodulemnist3d/001_nodule_smoke')"
 ```
 
 `run_sweep.sh` handles the full GPU-side loop: if no `run_NNN.m` files exist
