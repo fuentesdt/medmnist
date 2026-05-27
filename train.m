@@ -66,21 +66,19 @@ function train(configPath)
     save(modelPath, 'net');
 
     % 11. Evaluate on test split ------------------------------------------
-    % Explicit dlarray batching: minibatchpredict in R2025b misinterprets the
-    % batch dimension for raw 5D arrays, iterating over H=28 instead of N.
-    % 'SSSSCB' labels give MATLAB unambiguous dimension semantics.
+    % Explicit dlarray batching — R2025b misinterprets the batch dim for raw
+    % 5D numeric arrays in minibatchpredict.  reshape(·,[], B)' normalises
+    % whatever shape predict returns (e.g. [nC B] or [1 1 1 nC B]) to [B nC].
     fprintf('[%s] Evaluating on test split ...\n', runId);
     N_test = size(data.XTest, ndims(data.XTest));
     scores = zeros(N_test, cfg.numClasses, 'single');
     for bStart = 1 : cfg.batchSize : N_test
         bEnd  = min(bStart + cfg.batchSize - 1, N_test);
+        B     = bEnd - bStart + 1;
         Xb    = dlarray(single(data.XTest(:,:,:,:, bStart:bEnd)), 'SSSCB');
         out   = predict(net, Xb);
-        batch = single(extractdata(out));
-        if size(batch, 1) == cfg.numClasses && cfg.numClasses ~= N_test
-            batch = batch';           % [numClasses, B] → [B, numClasses]
-        end
-        scores(bStart:bEnd, :) = batch;
+        batch = gather(single(extractdata(out)));
+        scores(bStart:bEnd, :) = reshape(batch, [], B)';   % → [B, numClasses]
     end
     metrics = computeMetrics(cfg, scores, YTest);
 
