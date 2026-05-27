@@ -16,8 +16,9 @@ function head = buildHead(cfg)
 
     switch cfg.architecture
         case 'baseline_3d_v1'
-            head.layers  = [fullyConnectedLayer(cfg.numClasses, 'Name', 'fc'); ...
-                            softmaxLayer('Name', 'softmax')];
+            head.layers  = [flattenLayer(                          'Name', 'flatten'); ...
+                            fullyConnectedLayer(cfg.numClasses,    'Name', 'fc'); ...
+                            softmaxLayer(                          'Name', 'softmax')];
             head.lossFcn = 'crossentropy';
 
         otherwise

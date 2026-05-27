@@ -39,13 +39,12 @@ function layers = baseline3dV1Backbone(cfg)
     % Spatial dimensions after each stage for 28³ input:
     %   after block 1 + pool: 14³
     %   after block 2 + pool: 7³
-    %   after block 3 + GAP:  1³  (then FC flattens)
+    %   after block 3 + GAP:  1³  (then flatten+FC in head)
 
     spatialIn = cfg.inputSize(1:3);
     assert(all(mod(spatialIn, 4) == 0), ...
            'baseline_3d_v1 requires spatial dims divisible by 4 (got %s).', ...
            mat2str(spatialIn));
-    gapSize = spatialIn / 4;   % size after two stride-2 max pools
 
     layers = [
         convolution3dLayer([3 3 3], 8,  'Padding', 'same', 'Name', 'conv1')
@@ -61,6 +60,6 @@ function layers = baseline3dV1Backbone(cfg)
         convolution3dLayer([3 3 3], 32, 'Padding', 'same', 'Name', 'conv3')
         batchNormalizationLayer(            'Name', 'bn3')
         reluLayer(                          'Name', 'relu3')
-        averagePooling3dLayer(gapSize,       'Name', 'gap')
+        globalAveragePooling3dLayer(        'Name', 'gap')
     ];
 end
