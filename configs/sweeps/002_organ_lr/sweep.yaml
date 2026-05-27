@@ -1,0 +1,20 @@
+sweep_id: 002_organ_lr
+dataset: organmnist3d
+base_config: configs/organmnist3d.m
+description: |
+  Close the gap on organmnist3d (base run: 0.900, target: 0.950, gap: -0.050).
+  Base config used lr=1e-3, 50 epochs. Nodule sweep found lr=1e-4 was best
+  — organ ID may benefit similarly. Also testing 100 epochs: 11-class
+  classification may not converge fully at 50.
+  Augmentation stays "none" — left/right organ laterality must be preserved.
+  4 LRs x 2 epochs x 2 batch sizes x 2 seeds = 32 runs.
+
+grid:
+  lr: [1.0e-4, 3.0e-4, 5.0e-4, 1.0e-3]
+  epochs: [50, 100]
+  batch_size: [16, 32]
+  seed: [42, 1337]
+
+constraints:
+  max_runs: 40
+  max_train_minutes: 60

@@ -60,7 +60,7 @@ function jsons = findJsons(datasetDir)
         jsons = {};
         return
     end
-    entries = dir(fullfile(datasetDir, '**', 'run_*.json'));
+    entries = dir(fullfile(datasetDir, '**', '*.json'));
     jsons   = fullfile({entries.folder}, {entries.name});
 end
 
