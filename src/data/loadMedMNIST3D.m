@@ -38,7 +38,7 @@ end
 
 
 function X = loadImages(npz, split)
-    % NumPy stores as (N,H,W,D) C-order. MATLAB's cast transposes to [D W H N].
+    % NumPy stores as (N,H,W,D) C-order. Python bridge preserves dim order → [N H W D].
     % Permute to [H W D N], add channel dim → [H W D C N], rescale to [0,1].
     key = char(split + "_images");
     arr = single(npz{key});             % [D W H N]
@@ -48,7 +48,7 @@ function X = loadImages(npz, split)
               'Expected 4-D image array for split "%s", got %d-D.', split, ndims(arr));
     end
 
-    arr = permute(arr, [3 2 1 4]);      % [H W D N]
+    arr = permute(arr, [2 3 4 1]);      % [N H W D] → [H W D N]
     N   = size(arr, 4);
     X   = reshape(arr, size(arr,1), size(arr,2), size(arr,3), 1, N);  % [H W D C N]
     X   = X / 255;

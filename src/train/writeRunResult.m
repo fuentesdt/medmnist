@@ -12,7 +12,7 @@ function writeRunResult(cfg, sweepId, runId, resultPath, info, metrics, trainSec
         sweepId    (1,1) string
         runId      (1,1) string
         resultPath (1,1) string
-        info       (1,1) struct
+        info                       % TrainingHistoryData object in R2023b+
         metrics    (1,1) struct
         trainSec   (1,1) double
     end
@@ -22,7 +22,7 @@ function writeRunResult(cfg, sweepId, runId, resultPath, info, metrics, trainSec
               'Result already exists; refusing to overwrite: %s', resultPath);
     end
 
-    mkdir(fileparts(resultPath));
+    if ~isfolder(fileparts(resultPath)), mkdir(fileparts(resultPath)); end
 
     % --- Identity and provenance -------------------------------------------
     [~, sha] = system('git rev-parse --short HEAD');
@@ -71,17 +71,25 @@ end
 
 
 function out = extractCurves(info)
-    % Defensively extract training curves from the trainnet info struct.
+    % Extract training curves from TrainingHistoryData (R2023b+ trainnet)
+    % or a legacy plain struct.
     % ValidationLoss / ValidationAccuracy are per-validation-check (≈ per epoch).
-    % TrainingLoss is per-iteration; we store it as-is and note the periodicity.
+    % TrainingLoss is per-iteration.
 
-    valLoss  = safeField(info, 'ValidationLoss',     []);
-    valAcc   = safeField(info, 'ValidationAccuracy', []);
-    trnLoss  = safeField(info, 'TrainingLoss',        []);
+    if isstruct(info)
+        valLoss = safeField(info, 'ValidationLoss',     []);
+        valAcc  = safeField(info, 'ValidationAccuracy', []);
+        trnLoss = safeField(info, 'TrainingLoss',        []);
+    else
+        % deep.TrainingInfo (R2023b+): column is "Loss" in both sub-tables.
+        try, trnLoss = double(info.TrainingHistory.Loss);     catch, trnLoss = []; end
+        try, valLoss = double(info.ValidationHistory.Loss);   catch, valLoss = []; end
+        valAcc = [];   % ValidationAccuracy not present in this info format
+    end
 
     % ValidationAccuracy from trainnet is in percent [0,100]; convert to fraction.
     if ~isempty(valAcc)
-        valAcc = double(valAcc) / 100;
+        valAcc = valAcc / 100;
     end
 
     nChecks = max(numel(valLoss), numel(valAcc));

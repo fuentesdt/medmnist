@@ -62,7 +62,7 @@ function train(configPath)
 
     % 10. Save checkpoint (gitignored; path recorded in JSON) -------------
     modelPath = fullfile('checkpoints', strrep(runId, '/', filesep) + ".mat");
-    mkdir(fileparts(modelPath));
+    if ~isfolder(fileparts(modelPath)), mkdir(fileparts(modelPath)); end
     save(modelPath, 'net');
 
     % 11. Evaluate on test split ------------------------------------------
