@@ -69,6 +69,7 @@ function train(configPath)
     fprintf('[%s] Evaluating on test split ...\n', runId);
     testImgDs = arrayDatastore(data.XTest, 'IterationDimension', ndims(data.XTest));
     scores    = minibatchpredict(net, testImgDs, 'MiniBatchSize', cfg.batchSize);
+    scores    = single(scores)';   % trainnet returns [numClasses, N]; transpose → [N, numClasses]
     metrics   = computeMetrics(cfg, scores, YTest);
 
     % 12. Write result JSON -----------------------------------------------
