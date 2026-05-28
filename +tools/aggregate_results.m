@@ -72,14 +72,15 @@ function row = flattenRun(data)
     % Config
     if isfield(data, 'config')
         c = data.config;
-        row.dataset      = safeStr(c, 'dataset');
-        row.lr           = safeNum(c, 'lr',          NaN);
-        row.batchSize    = safeNum(c, 'batchSize',   NaN);
-        row.epochs       = safeNum(c, 'epochs',      NaN);
-        row.optimizer    = safeStr(c, 'optimizer');
-        row.augmentation = safeStr(c, 'augmentation');
-        row.seed         = safeNum(c, 'seed',        NaN);
-        row.architecture = safeStr(c, 'architecture');
+        row.dataset       = safeStr(c, 'dataset');
+        row.lr            = safeNum(c, 'lr',           NaN);
+        row.batchSize     = safeNum(c, 'batchSize',    NaN);
+        row.epochs        = safeNum(c, 'epochs',       NaN);
+        row.optimizer     = safeStr(c, 'optimizer');
+        row.augmentation  = safeStr(c, 'augmentation');
+        row.seed          = safeNum(c, 'seed',         NaN);
+        row.architecture  = safeStr(c, 'architecture');
+        row.useBatchNorm  = safeBool(c, 'useBatchNorm', NaN);
     end
 
     % Environment
@@ -108,4 +109,17 @@ function v = safeNum(s, field, default)
     else
         v = default;
     end
+end
+
+
+function v = safeBool(s, field, default)
+    % Handles logical scalars (jsondecode maps JSON true/false to logical).
+    if isfield(s, field)
+        raw = s.(field);
+        if (islogical(raw) || isnumeric(raw)) && isscalar(raw)
+            v = double(raw);   % true→1, false→0
+            return
+        end
+    end
+    v = default;
 end
