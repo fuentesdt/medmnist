@@ -20,5 +20,6 @@ function cfg = organmnist3d()
     % No flip — organs are lateralised (liver right, spleen left).
     cfg.augmentation = "none";
 
+    cfg.useBatchNorm = true;
     cfg.seed         = 42;
 end

@@ -204,7 +204,9 @@ end
 
 
 function s = value2matlab(v)
-    if ischar(v) || (isstring(v) && isscalar(v))
+    if islogical(v) && isscalar(v)
+        if v, s = 'true'; else, s = 'false'; end
+    elseif ischar(v) || (isstring(v) && isscalar(v))
         s = ['"', char(v), '"'];
     elseif isnumeric(v) && isscalar(v)
         if v == floor(v) && abs(v) < 1e6

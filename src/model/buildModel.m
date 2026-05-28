@@ -33,8 +33,8 @@ end
 
 
 function layers = baseline3dV1Backbone(cfg)
-    % Three conv blocks (8→16→32 filters) with BN+ReLU and 2× max-pool after
-    % each of the first two blocks. Global average pool collapses spatial dims.
+    % Three conv blocks (8→16→32 filters) with optional BN+ReLU and 2× max-pool
+    % after each of the first two blocks. Global average pool collapses spatial dims.
     %
     % Spatial dimensions after each stage for 28³ input:
     %   after block 1 + pool: 14³
@@ -46,20 +46,22 @@ function layers = baseline3dV1Backbone(cfg)
            'baseline_3d_v1 requires spatial dims divisible by 4 (got %s).', ...
            mat2str(spatialIn));
 
-    layers = [
-        convolution3dLayer([3 3 3], 8,  'Padding', 'same', 'Name', 'conv1')
-        batchNormalizationLayer(            'Name', 'bn1')
-        reluLayer(                          'Name', 'relu1')
-        maxPooling3dLayer([2 2 2], 'Stride', [2 2 2], 'Name', 'pool1')
+    useBN = ~isfield(cfg, 'useBatchNorm') || cfg.useBatchNorm;
 
-        convolution3dLayer([3 3 3], 16, 'Padding', 'same', 'Name', 'conv2')
-        batchNormalizationLayer(            'Name', 'bn2')
-        reluLayer(                          'Name', 'relu2')
-        maxPooling3dLayer([2 2 2], 'Stride', [2 2 2], 'Name', 'pool2')
-
-        convolution3dLayer([3 3 3], 32, 'Padding', 'same', 'Name', 'conv3')
-        batchNormalizationLayer(            'Name', 'bn3')
-        reluLayer(                          'Name', 'relu3')
-        globalAveragePooling3dLayer(        'Name', 'gap')
-    ];
+    L = convolution3dLayer([3 3 3], 8,  'Padding', 'same', 'Name', 'conv1');
+    if useBN, L = [L; batchNormalizationLayer('Name', 'bn1')]; end
+    L = [L
+         reluLayer(                          'Name', 'relu1')
+         maxPooling3dLayer([2 2 2], 'Stride', [2 2 2], 'Name', 'pool1')
+         convolution3dLayer([3 3 3], 16, 'Padding', 'same', 'Name', 'conv2')];
+    if useBN, L = [L; batchNormalizationLayer('Name', 'bn2')]; end
+    L = [L
+         reluLayer(                          'Name', 'relu2')
+         maxPooling3dLayer([2 2 2], 'Stride', [2 2 2], 'Name', 'pool2')
+         convolution3dLayer([3 3 3], 32, 'Padding', 'same', 'Name', 'conv3')];
+    if useBN, L = [L; batchNormalizationLayer('Name', 'bn3')]; end
+    L = [L
+         reluLayer(                          'Name', 'relu3')
+         globalAveragePooling3dLayer(        'Name', 'gap')];
+    layers = L;
 end
