@@ -20,5 +20,6 @@ function cfg = vesselmnist3d()
     % flip only — MRA vessel patches, no directional meaning.
     cfg.augmentation = "flip";
 
+    cfg.useBatchNorm = true;
     cfg.seed         = 42;
 end

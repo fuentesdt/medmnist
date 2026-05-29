@@ -21,5 +21,6 @@ function cfg = fracturemnist3d()
     % flip only — CT rib/spine patches.
     cfg.augmentation = "flip";
 
+    cfg.useBatchNorm = true;
     cfg.seed         = 42;
 end

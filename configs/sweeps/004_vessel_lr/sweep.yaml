@@ -1,0 +1,17 @@
+sweep_id: 004_vessel_lr
+dataset: vesselmnist3d
+base_config: configs/vesselmnist3d.m
+description: |
+  LR and BN ablation for vesselmnist3d.
+  Base adhoc run: 0.9162 ACC (target 0.88 — already reproduced).
+  Sweep to characterise BN effect and find best LR across this dataset.
+  4 LRs x 2 BN x 2 seeds = 16 runs.
+
+grid:
+  lr: [1.0e-4, 3.0e-4, 5.0e-4, 1.0e-3]
+  use_batch_norm: [true, false]
+  seed: [42, 1337]
+
+constraints:
+  max_runs: 20
+  max_train_minutes: 30

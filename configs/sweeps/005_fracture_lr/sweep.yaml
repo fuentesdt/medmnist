@@ -1,0 +1,18 @@
+sweep_id: 005_fracture_lr
+dataset: fracturemnist3d
+base_config: configs/fracturemnist3d.m
+description: |
+  LR and BN ablation for fracturemnist3d.
+  Base adhoc run: 0.5500 ACC (target 0.51 — already reproduced).
+  Hard 3-class task; low published ceiling even for ResNet-50.
+  Sweep to characterise BN effect and find best LR across this dataset.
+  4 LRs x 2 BN x 2 seeds = 16 runs.
+
+grid:
+  lr: [1.0e-4, 3.0e-4, 5.0e-4, 1.0e-3]
+  use_batch_norm: [true, false]
+  seed: [42, 1337]
+
+constraints:
+  max_runs: 20
+  max_train_minutes: 30

@@ -20,5 +20,6 @@ function cfg = adrenalmnist3d()
     % flip only — CT, symmetric gland structure, no laterality concern.
     cfg.augmentation = "flip";
 
+    cfg.useBatchNorm = true;
     cfg.seed         = 42;
 end

@@ -20,5 +20,6 @@ function cfg = synapsemnist3d()
     % flip only — EM synapse patches, isotropic.
     cfg.augmentation = "flip";
 
+    cfg.useBatchNorm = true;
     cfg.seed         = 42;
 end
